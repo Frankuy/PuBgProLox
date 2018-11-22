@@ -3,13 +3,16 @@ dynamic(playerPosition/2).
 dynamic(weaponPosition/3).
 dynamic(playerHealth/1).
 dynamic(playerArmor/1).
+dynamic(playerAmmo/1).
 dynamic(playerInventory/2).
 dynamic(playerEquip/2).
 dynamic(luasmap/2).
 dynamic(medicinePosition/3).
 dynamic(armorPosition/3).
-dynamic(ammoPosition/3).
+dynamic(ammoPosition/4).
 dynamic(inventory/3).
+dynamic(npcEquipment/2).
+dynamic(npcPosition/2).
 weapon(akm, 50, 0).
 weapon(ump, 35, 0).
 weapon(pistol, 10, 0).
@@ -20,7 +23,7 @@ armor(helmet, 20).
 medicine(firstaid, 70).
 medicine(bandage, 10).
 
-/* RULES */
+/* RULES pokok */
 start :- write(' _____    _    _   ____     _____ '),nl,
 		 write('|  __ \\  | |  | | |  _ \\   / ____|'),nl,
 		 write('| |__) | | |  | | | |_) | | |  __'),nl,
@@ -31,28 +34,7 @@ start :- write(' _____    _    _   ____     _____ '),nl,
 		 write('Selamat datang di Pulau Champs.'), nl, 
 		 write('Bersenang-senanglah di pulau ini!. Tapi ingat only one can survive and get the title "Jagonya Ayam"'), nl, 
 		 write('Jika kamu menang, Kamu juga akan mendapatkan persediaan sosis selama 1 tahun penuh. So, let\'s the battle royale begin!'), nl, nl,
-		 write('Perintah yang tersedia : '),nl,
-		 write('    start.'), nl,
-		 write('    help.'), nl,
-		 write('    quit.'), nl,
-		 write('    NSEW.'), nl,
-		 write('    map.'),nl,
-		 write('    take(object).'), nl,
-		 write('    drop(object).'), nl,
-		 write('    use(object).'), nl,
-		 write('    attack.'),nl,
-		 write('    status.'),nl,
-		 write('    save(filename).'),nl,
-		 write('    load(filename).'),nl,
-		 write('Keterangan : '),nl,
-		 write('    W = weapon'),nl,
-		 write('    A = Armor'),nl,
-		 write('    M = Medicine'),nl,
-		 write('    O = Ammo'),nl,
-		 write('    P = Player'),nl,
-		 write('    E = Enemy'),nl,
-		 write('    - = Accesible'),nl,
-		 write('    X = Inaccesible'),
+		 help,	
 		 random(0,10,X),
 		 random(0,10,Y),
 		 assertz(playerPosition(2,2)),
@@ -63,12 +45,12 @@ start :- write(' _____    _    _   ____     _____ '),nl,
 		 assertz(medicinePosition(bandage,2,2)),
 		 assertz(armorPosition(vest,3,2)),
 		 assertz(armorPosition(helmet,3,1)),
-		 assertz(ammoPosition(5,1,3)),
-		 assertz(ammoPosition(10,2,1)),
-		 assertz(inventory([],0)),
+		 assertz(ammoPosition(ammo,5,1,3)),
+		 assertz(ammoPosition(ammo,10,2,1)),
 		 assertz(playerHealth(100)),
 		 assertz(playerArmor(0)),
-		 assertz(playerInventory(0,5)),
+		 assertz(playerAmmo(0)),
+		 assertz(playerInventory([],10)),
 		 assertz(playerEquip(none, 0)),
 		 assertz(luasmap(10, 10)).
 
@@ -112,7 +94,7 @@ status :- playerHealth(Health), playerArmor(Armor), playerEquip(Equipment, _), p
 			write('Health : '), write(Health), nl,
 			write('Armor : '), write(Armor), nl,
 			write('Weapon : '), write(Equipment), nl, 
-			Jumlah = 0, write('Your inventory is empty!').
+			Jumlah = 0, write('Your inventory is empty!'), nl.
 			
 look :- playerPosition(X,Y),
 		A is X-1, B is Y-1, cek(A,B),
@@ -124,22 +106,31 @@ look :- playerPosition(X,Y),
 		M is X-1, N is Y+1,cek(M,N),
 		O is X, P is Y+1,cek(O,P),
 		Q is X+1, R is Y+1,cek(Q,R).
-		
-/*cetak(X,XBenda,Y,YBenda, Benda, NamaBenda) :- XBenda = X, YBenda = Y, write(Benda), retract(weaponPosition(NamaBenda, XBenda, YBenda)),assertz(weaponPosition(NamaBenda, XBenda, YBenda)), !.
-cetak(X,XBenda,Y,YBenda, Benda, NamaBenda) :- write('-').
-cariObjek(X,Y,Simbol):- */
 
-attack :- playerHealth(X), Z is X-20, retract(playerHealth(X)), asserta(playerHealth(Z)). 
+attack :- playerHealth(X), npcEquipment(_,Y), Z is X-Y, retract(playerHealth(X)), asserta(playerHealth(Z)). 
+
+/* Predikat Tambahan */
 cek(X,Y):-medicinePosition(_,X,Y),write('M'),!.
 cek(X,Y):-weaponPosition(_,X,Y),write('W'),!.
 cek(X,Y):-armorPosition(_,X,Y),write('A'),!.
-cek(X,Y):-ammoPosition(_,X,Y),write('O'),!.
+cek(X,Y):-ammoPosition(_,N,X,Y),write('O'),!.
 cek(X,Y):-write('-').
-take(Object):-playerPosition(X,Y),A is X, B is Y, medicinePosition(Object,A,B),inventory(I,N),M is N+1,retract(inventory(I,N)),assertz(inventory([O|I],M)).
-cekInventori:-inventory(L,N),write(N).
-/*Belum diprint isi inventorinya, baru print jumlahnya
 
+take(Object):-playerPosition(X,Y),A is X, B is Y, medicinePosition(Object,A,B),playerInventory(I,N),M is N+1,retract(medicinePosition(Object,A,B)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),!.
+take(Object):-playerPosition(X,Y),A is X, B is Y, weaponPosition(Object,A,B),playerInventory(I,N),M is N+1,retract(weaponPosition(Object,X,Y)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),!.
+take(Object):-playerPosition(X,Y),A is X, B is Y, armorPosition(Object,A,B),playerInventory(I,N),M is N+1,retract(armorPosition(Object,X,Y)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),!.
+take(Object):-playerPosition(X,Y),A is X, B is Y, ammoPosition(Object,J,A,B),playerAmmo(N),M is N+J,retract(playerAmmo(N)),retract(ammoPosition(Object,J,A,B)),assertz(playerAmmo(M)),write('You took the '),write(Object),!.
+
+cekInventory:-playerInventory(L,N),cetakInventory(L).
+cetakInventory([]):-nl.
+cetakInventory([H]):-write(H),nl.
+cetakInventory([H|T]):-write(H),nl,cetakInventory(T).
+
+generateNPCHard :- random(1,10,X), random(1,10,Y), assertz(npcEquipment(akm,50)), assertz(npcPosition(X,Y)).
+generateNPCMedium :- random(1,10,X), random(1,10,Y), assertz(npcEquipment(ump,35)), assertz(npcPosition(X,Y)).
+generateNPCEasy :- random(1,10,X), random(1,10,Y), assertz(npcEquipment(pistol,10)), assertz(npcPosition(X,Y)).
+
+/*Belum diprint isi inventorinya, baru print jumlahnya
 cetakInven:-inventory([H],N),write(H),nl,inventory([],N).
 cetakInven:-inventory([H|T],N),write(H),nl,inventory(T,N).
 */
-
