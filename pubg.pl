@@ -65,7 +65,7 @@ start :- write(' _____    _    _   ____     _____ '),nl,
 		 assertz(armorPosition(helmet,3,1)),
 		 assertz(ammoPosition(5,1,3)),
 		 assertz(ammoPosition(10,2,1)),
-		 assertz(inventory([],5)),
+		 assertz(inventory([],0)),
 		 assertz(playerHealth(100)),
 		 assertz(playerArmor(0)),
 		 assertz(playerInventory(0,5)),
@@ -135,5 +135,11 @@ cek(X,Y):-weaponPosition(_,X,Y),write('W'),!.
 cek(X,Y):-armorPosition(_,X,Y),write('A'),!.
 cek(X,Y):-ammoPosition(_,X,Y),write('O'),!.
 cek(X,Y):-write('-').
-take(Object):-playerPosition(X,Y),A is X, B is Y, medicinePosition(Object,A,B),inventory(I,N),M is N-1,retract(inventory(I,N)),assertz(inventory([O|I],M)).
+take(Object):-playerPosition(X,Y),A is X, B is Y, medicinePosition(Object,A,B),inventory(I,N),M is N+1,retract(inventory(I,N)),assertz(inventory([O|I],M)).
 cekInventori:-inventory(L,N),write(N).
+/*Belum diprint isi inventorinya, baru print jumlahnya
+
+cetakInven:-inventory([H],N),write(H),nl,inventory([],N).
+cetakInven:-inventory([H|T],N),write(H),nl,inventory(T,N).
+*/
+
