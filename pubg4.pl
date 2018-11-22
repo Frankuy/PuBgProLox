@@ -14,6 +14,7 @@ dynamic(ammoPosition/4).
 dynamic(inventory/3).
 dynamic(npcEquipment/2).
 dynamic(npcPosition/2).
+dynamic(object/1).
 weapon(akm, 50, 0).
 weapon(ump, 35, 0).
 weapon(clurit,20, 0).
@@ -53,6 +54,7 @@ start :- write(' _____    _    _   ____     _____ '),nl,
 		 assertz(ammoPosition(ammo,5,1,3)),
 		 assertz(ammoPosition(ammo,10,2,1)),
 		 assertz(playerHealth(100)),
+		 assertz(object([])),
 		 assertz(playerArmor([],0)),
 		 assertz(playerAmmo(0)),
 		 assertz(playerInventory([],10)),
@@ -103,26 +105,30 @@ status :- playerHealth(Health), playerArmor(Armor,Jumlah), playerEquip(Equipment
 cetakArmor([]):-nl.	
 cetakArmor([H|T]):-write(H),write(' '),cetakArmor(T).
 		
-look :- playerPosition(X,Y),
+look :- playerPosition(X,Y),object(L),retract(object(L)),assertz(object([])),
 		A is X-1, B is Y-1, cek(A,B),
 		C is X, D is Y-1,cek(C,D),
 		E is X+1, F is Y-1,cek(E,F),nl,
 		G is X-1, H is Y,cek(G,H),
 		I is X, J is Y,cek(I,J),
-		K is X+1, L is Y,cek(K,L),nl,
+		K is X+1, L1 is Y,cek(K,L1),nl,
 		M is X-1, N is Y+1,cek(M,N),
 		O is X, P is Y+1,cek(O,P),
-		Q is X+1, R is Y+1,cek(Q,R).
+		Q is X+1, R is Y+1,cek(Q,R),nl,object(L2),
+		keterangan(L2).
 
 attack :- playerHealth(X), npcEquipment(_,Y), Z is X-Y, retract(playerHealth(X)), asserta(playerHealth(Z)). 
 
 /* Predikat Tambahan */
 cek(X,Y):-npcPosition(X,Y), write('E'), !.
-cek(X,Y):-medicinePosition(_,X,Y),write('M'),!.
-cek(X,Y):-weaponPosition(_,X,Y),write('W'),!.
-cek(X,Y):-armorPosition(_,X,Y),write('A'),!.
-cek(X,Y):-ammoPosition(_,N,X,Y),write('O'),!.
+cek(X,Y):-object(L),medicinePosition(Benda,X,Y),!,write('M'),retract(object(L)),assertz(object([Benda|L])).
+cek(X,Y):-object(L),weaponPosition(Benda,X,Y),!,write('W'),retract(object(L)),assertz(object([Benda|L])).
+cek(X,Y):-object(L),armorPosition(Benda,X,Y),!,write('A'),retract(object(L)),assertz(object([Benda|L])).
+cek(X,Y):-object(L),ammoPosition(Benda,N,X,Y),!,write('O'),retract(object(L)),assertz(object([Benda|L])).
 cek(X,Y):-write('-').
+keterangan([H]):-write('You see the '),write(H),write('.').
+keterangan([H|T]):-write('You see the '),write(H),write('.'),keterangan(T).
+
 
 take(Object):-playerPosition(X,Y),A is X, B is Y, medicinePosition(Object,A,B),playerInventory(I,N),M is N-1,retract(medicinePosition(Object,A,B)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),!.
 take(Object):-playerPosition(X,Y),A is X, B is Y, weaponPosition(Object,A,B),playerInventory(I,N),M is N-1,retract(weaponPosition(Object,X,Y)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),!.
