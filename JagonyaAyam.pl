@@ -14,7 +14,7 @@ dynamic(ammoPosition/4).
 dynamic(inventory/3).
 dynamic(npcEquipment/3).
 dynamic(npcPosition/3).
-dynamic(npcHealth/2).	
+dynamic(npcHealth/2).
 dynamic(danger/1).
 dynamic(time/1).
 dynamic(object/1).
@@ -36,11 +36,11 @@ start :- write(' _____    _    _   ____     _____ '),nl,
 		 write('| |__) | | |  | | | |_) | | |  __'),nl,
 		 write('|  ___/  | |  | | |  _ <  | | |_ |'),nl,
 		 write('| |      | |__| | | |_) | | |__| |'),nl,
-		 write('|_|       \\____/  |____/   \\_____|  Jagonya Ayam'),nl,   
+		 write('|_|       \\____/  |____/   \\_____|  Jagonya Ayam'),nl,
 		 write('                                     '),nl,
 		 % gambarAyam,
-		 write('Selamat datang di Pulau Champs.'), nl, 
-		 write('Bersenang-senanglah di pulau ini!. Tapi ingat only one can survive and get the title "Jagonya Ayam"'), nl, 
+		 write('Selamat datang di Pulau Champs.'), nl,
+		 write('Bersenang-senanglah di pulau ini!. Tapi ingat only one can survive and get the title "Jagonya Ayam"'), nl,
 		 write('Jika kamu menang, Kamu juga akan mendapatkan persediaan sosis selama 1 tahun penuh. So, let\'s the battle royale begin!'), nl, nl,
 		 help,
 		 randomize,
@@ -57,7 +57,7 @@ help :- print('      ===========================================================
 		print('     |help.             | Get some help to look over commands available.               |'),nl,
 		print('     |quit.             | Farewell, quit the game.                                     |'),nl,
 		print('     |look.             | Look around you.                                             |'),nl,
-		print('     |cetakMAP.         | Open cetakMAP and see where on Earth are you.                |'),nl,
+		print('     |map.              | Open cetakMAP and see where on Earth are you.                |'),nl,
 		print('     |N. E. S. W.       | Move to the North, East, South, or West.                     |'),nl,
 		print('     |take(Object).     | Pick up an object.                                           |'),nl,
 		print('     |drop(Object).     | Drop an object.                                              |'),nl,
@@ -81,18 +81,24 @@ help :- print('      ===========================================================
 
 quit :- halt.
 
-n :- playerPosition(X, Y), Z is Y-1, retract(playerPosition(X,Y)), assertz(playerPosition(X,Z)), increaseTime, gerakMusuh, increaseDanger,  killbot.
-w :- playerPosition(X, Y), Z is X-1, retract(playerPosition(X,Y)), assertz(playerPosition(Z,Y)), increaseTime, gerakMusuh, increaseDanger, killbot.
-e :- playerPosition(X, Y), Z is X+1, retract(playerPosition(X,Y)), assertz(playerPosition(Z,Y)), increaseTime, gerakMusuh, increaseDanger, killbot.
-s :- playerPosition(X, Y), Z is Y+1, retract(playerPosition(X,Y)), assertz(playerPosition(X,Z)), increaseTime, gerakMusuh, increaseDanger, killbot.
+n :- playerPosition(X, Y), Z is Y-1, retract(playerPosition(X,Y)), assertz(playerPosition(X,Z)), cetakKeteranganTempatSetelahGerak(X,Z),  increaseTime, gerakMusuh, increaseDanger,  killbot.
+w :- playerPosition(X, Y), Z is X-1, retract(playerPosition(X,Y)), assertz(playerPosition(Z,Y)), cetakKeteranganTempatSetelahGerak(Z,Y), increaseTime, gerakMusuh, increaseDanger, killbot.
+e :- playerPosition(X, Y), Z is X+1, retract(playerPosition(X,Y)), assertz(playerPosition(Z,Y)), cetakKeteranganTempatSetelahGerak(Z,Y), increaseTime, gerakMusuh, increaseDanger, killbot.
+s :- playerPosition(X, Y), Z is Y+1, retract(playerPosition(X,Y)), assertz(playerPosition(X,Z)), cetakKeteranganTempatSetelahGerak(X,Z), increaseTime, gerakMusuh, increaseDanger, killbot.
+
+cetakKeteranganTempatSetelahGerak(X,Y) :-  A is X+1, B is X-1, C is Y + 1, D is Y - 1,
+																					write('You are in '), namaWilayah(X,Y), write(' To the north is '),
+																					namaWilayah(X,D), write(' To the west is '), namaWilayah(B,Y),
+																					write(' To the south is '), namaWilayah(X,C), write(' To the east is '),
+																					namaWilayah(A,Y), nl.
 
 status :- playerHealth(Health), playerArmor(Armor,Jumlah), playerEquip(Equipment, _), playerInventory(Inven,Sisa),
 			write('Health : '), write(Health), nl,
-			write('Armor : '), cetakArmor(Armor), 
+			write('Armor : '), cetakArmor(Armor),
 			write('Weapon : '), write(Equipment), nl,
-			write('Ammo : '), playerAmmo(X), write(X),nl, 
+			write('Ammo : '), playerAmmo(X), write(X),nl,
 			cekInventory.
-			
+
 look :- playerPosition(X,Y),object(L),retract(object(L)),assertz(object([])),
 		A is X-1, B is Y-1, cek(A,B),
 		C is X, D is Y-1,cek(C,D),
@@ -102,10 +108,25 @@ look :- playerPosition(X,Y),object(L),retract(object(L)),assertz(object([])),
 		K is X+1, L1 is Y,cek(K,L1),nl,
 		M is X-1, N is Y+1,cek(M,N),
 		O is X, P is Y+1,cek(O,P),
-		Q is X+1, R is Y+1,cek(Q,R),nl,object(L2),
+		Q is X+1, R is Y+1,cek(Q,R),nl,
+		write('You are in '), namaWilayah(X,Y),
+		object(L2),
 		keterangan(L2).
 
-attack :- playerHealth(X), playerPosition(Px,Py), npcPosition(Id, Px, Py), npcEquipment(Id,_,Y), playerEquip(_,DamageEquip), playerAmmo(Ammo), Ammo > 0, retract(playerAmmo(Ammo)), NewAmmo is Ammo-1, assertz(playerAmmo(NewAmmo)), NewHealth is X-Y, retract(playerHealth(X)), assertz(playerHealth(NewHealth)), npcHealth(Id,HpNPC), HpNPCNow is HpNPC-DamageEquip, deleteEnemy(Id, HpNPCNow).
+namaWilayah(X,Y) :- dangerZone(X,Y), write('Deadzone.'), !.
+namaWilayah(X,Y) :- luasmap(A,B), X>=2, X=<(A//2), Y>=2, Y=<(B//2), write('Coblong.'), !.
+namaWilayah(X,Y) :- luasmap(A,B), C is (A//2)+1, X>=C, X=<(A-1), Y>=2, Y=<(B//2), write('Cicaheum.'), !.
+namaWilayah(X,Y) :- luasmap(A,B), C is (B//2)+1, X>=2, X=<(A//2), Y>=C, Y=<(B-1), write('Cibaduyut.'), !.
+namaWilayah(X,Y) :- luasmap(A,B), C is (A//2)+1, D is (B//2)+1, X>=C, X=<(A-1), Y>=D, Y=<(B-1), write('Ciumbuleuit.'), !.
+
+attack :- playerPosition(X,Y), npcPosition(IdEnemy,X,Y), playerEquip(NamaEquip,DamageEquip), NamaEquip = none, write('Gunakan senjata dulu gan'), nl ,healthAfterAttack(IdEnemy), !.
+attack :- playerPosition(X,Y), npcPosition(IdEnemy,X,Y), playerAmmo(JumlahAmmo), JumlahAmmo = 0, write('Serangan gagal, ammo abis'), nl, healthAfterAttack(IdEnemy),!.
+attack :- playerPosition(X,Y), npcPosition(IdEnemy,X,Y), playerEquip(NamaEquip,DamageEquip), npcHealth(IdEnemy,HpNPC), HpNPCNow is HpNPC-DamageEquip, healthAfterAttack(IdEnemy), attackEnemy(IdEnemy, HpNPCNow), playerAmmo(JumlahAmmo), JumlahAmmoSkrg is JumlahAmmo - 1, retract(playerAmmo(JumlahAmmo)), asserta(playerAmmo(JumlahAmmoSkrg)), !.
+
+healthAfterAttack(IdEnemy) :- playerHealth(X), npcEquipment(Id,_,Y), Z is X-Y, write('Kena Tembak Gan, Your Health : '), write(Z), nl, retract(playerHealth(X)), asserta(playerHealth(Z)).
+
+attackEnemy(Id, Hp) :- Hp=<0, retract(npcEquipment(Id,NamaSenjata,_)), retract(npcPosition(Id,X,Y)), retract(npcHealth(Id,_)),asserta(weaponPosition(NamaSenjata,X,Y)), write('Musuhmu Mati'), npcAlive(Alive), NewAlive is Alive-1, retract(npcAlive(Alive)), assertz(npcAlive(NewAlive)),nl,!.
+attackEnemy(Id, Hp) :- retract(npcHealth(Id,_)), asserta(npcHealth(Id,Hp)), write('Musuh Belum Mati, Sisa darah musuh:'), write(Hp),nl.
 
 map :- playerPosition(X,Y), luasmap(A,A), danger(B), cetakMAP(1,1,A,B,X,Y).
 
@@ -139,7 +160,7 @@ cek(X,Y):-write('-').
 keterangan([]):-write('').
 keterangan([H|T]):-write('You see the '),write(H),write('. '),keterangan(T).
 
-dangerZone(X,Y) :- danger(A), luasmap(Z1, Z2), (X =< A; Y =< A; X >= Z1+1-A; Y >= Z2+1-A).  
+dangerZone(X,Y) :- danger(A), luasmap(Z1, Z2), (X =< A; Y =< A; X >= Z1+1-A; Y >= Z2+1-A).
 
 cekInventory:-playerInventory(L,N),cetakInventory(L).
 cetakInventory([]):-write('').
@@ -156,7 +177,7 @@ cetakMAP(Baris,Kolom,X,DangerZone,Px,Py) :- write(' - '),((Kolom=:=X, nl, K is 1
 
 buatDatabase :- generateNPCEasy(1),generateNPCEasy(2),
 		 generateNPCMedium(3), generateNPCMedium(4),
-		 generateNPCHard(5), generateNPCHard(6),	
+		 generateNPCHard(5), generateNPCHard(6),
 		 random(2,10,X),
 		 random(2,10,Y),
 		 assertz(playerPosition(X,Y)),
@@ -183,18 +204,18 @@ buatDatabase :- generateNPCEasy(1),generateNPCEasy(2),
 
 command :- write('>'), read(X), X.
 
-increaseDanger :- time(T), C is T mod 10, C == 0, !, danger(X), Z is X+1, retract(danger(X)), assertz(danger(Z)). 
+increaseDanger :- time(T), C is T mod 10, C == 0, !, danger(X), Z is X+1, retract(danger(X)), assertz(danger(Z)).
 
 gerakMusuh :- time(T), C is T mod 3, C == 0, !, moveNPC(1), moveNPC(2), moveNPC(3), moveNPC(4), moveNPC(5), moveNPC(6). /* musuh gerak */
 gerakMusuh:-true.
 
-moveNPC(Id) :- random(1,5,X), Z is X, (Z == 1 -> (retract(npcPosition(Id,Px,Py)),Pz is Py-1,assertz(npcPosition(Id,Px,Pz))); 
-			(Z == 2 ->(npcPosition(Id,Px,Py),retract(npcPosition(Id,Px,Py)),Pz is Py-1,assertz(npcPosition(Id,Px,Pz))); 
+moveNPC(Id) :- random(1,5,X), Z is X, (Z == 1 -> (retract(npcPosition(Id,Px,Py)),Pz is Py-1,assertz(npcPosition(Id,Px,Pz)));
+			(Z == 2 ->(npcPosition(Id,Px,Py),retract(npcPosition(Id,Px,Py)),Pz is Py-1,assertz(npcPosition(Id,Px,Pz)));
 			(Z == 3 ->(npcPosition(Id,Px,Py),retract(npcPosition(Id,Px,Py)),Pz is Py+1,assertz(npcPosition(Id,Px,Pz)));
-			(Z == 4 ->(npcPosition(Id,Px,Py),retract(npcPosition(Id,Px,Py)),Pz is Px+1,assertz(npcPosition(Id,Pz,Py))))))).  
+			(Z == 4 ->(npcPosition(Id,Px,Py),retract(npcPosition(Id,Px,Py)),Pz is Px+1,assertz(npcPosition(Id,Pz,Py))))))).
 
 
-generateWeapon(Object) :- random(2,10,X), random(2,10,Y), assertz(weaponPosition(Object,X,Y)). 
+generateWeapon(Object) :- random(2,10,X), random(2,10,Y), assertz(weaponPosition(Object,X,Y)).
 generateMedicine(Object) :- random(2,10,X), random(2,10,Y), assertz(medicinePosition(Object,X,Y)).
 generateArmor(Object) :- random(2,10,X), random(2,10,Y), assertz(armorPosition(Object,X,Y)).
 generateAmmo(Ammo) :- random(2,10,X), random(2,10,Y), assertz(ammoPosition(ammo,Ammo,X,Y)).
@@ -206,13 +227,10 @@ winOrlose :- playerHealth(X), X < 0, !, write('Kamu kalah! Maaf anda bukan jagon
 winOrlose :- npcAlive(X), X = 0, !, write('Kamu memang JAGONYA AYAM!'), nl, true.
 winOrlose :- false.
 
-cetakArmor([]):-nl.	
+cetakArmor([]):-nl.
 cetakArmor([H|T]):-write(H),write(' '),cetakArmor(T).
 
-deleteEnemy(Id, Hp) :- Hp =< 0, retract(npcEquipment(Id,NamaSenjata,_)), retract(npcPosition(Id,X,Y)), retract(npcHealth(Id,_)), assertz(weaponPosition(NamaSenjata,X,Y)), npcAlive(Alive), NewAlive is Alive-1, retract(npcAlive(Alive)), assertz(npcAlive(NewAlive)), !.
-deleteEnemy(Id, Hp) :- retract(npcHealth(Id,_)), assertz(npcHealth(Id,Hp)).
-
-killbot :- npcPosition(Id, X, Y), dangerZone(X,Y), retract(npcPosition(Id,X,Y)), retract(npcHealth(Id,_)), assertz(weaponPosition(NamaSenjata,X,Y)), npcAlive(Alive), NewAlive is Alive-1, retract(npcAlive(Alive)), assertz(npcAlive(NewAlive)), !. 
+killbot :- npcPosition(Id, X, Y), dangerZone(X,Y), retract(npcPosition(Id,X,Y)), retract(npcHealth(Id,_)), assertz(weaponPosition(NamaSenjata,X,Y)), npcAlive(Alive), NewAlive is Alive-1, retract(npcAlive(Alive)), assertz(npcAlive(NewAlive)), !.
 /*
 gambarAyam :- print('                                   .-.  .--\'\'` )'),nl,
 				print('                                _ |  |/`   .-\'`'),nl,

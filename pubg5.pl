@@ -104,10 +104,10 @@ status :- playerHealth(Health), playerArmor(L,Armor), playerAmmo(JumlahAmmo), pl
 			write('Weapon : '), write(Equipment), nl,
 			cekInventory, nl.
 
-namaWilayah(X,Y) :- X>=2, X=<6, Y>=2, Y=<6, write('Your in Coblong'), nl, !.
-namaWilayah(X,Y) :- X>=7, X=<11, Y>=2, Y=<6, write('Your in Cicaheum'), nl, !.
-namaWilayah(X,Y) :- X>=2, X=<6, Y>=7, Y=<11, write('Your in Cibaduyut'), nl, !.
-namaWilayah(X,Y) :- X>=7, X=<11, Y>=7, Y=<11, write('Your in Ciumbuleuit'), nl, !.
+namaWilayah(X,Y) :- X>=2, X=<6, Y>=2, Y=<6, write('Your in Coblong'), !.
+namaWilayah(X,Y) :- X>=7, X=<11, Y>=2, Y=<6, write('Your in Cicaheum'), !.
+namaWilayah(X,Y) :- X>=2, X=<6, Y>=7, Y=<11, write('Your in Cibaduyut'), !.
+namaWilayah(X,Y) :- X>=7, X=<11, Y>=7, Y=<11, write('Your in Ciumbuleuit'), !.
 
 look :- playerPosition(X,Y),
 		namaWilayah(X,Y),
