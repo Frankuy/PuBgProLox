@@ -14,6 +14,7 @@ dynamic(ammoPosition/4).
 dynamic(inventory/3).
 dynamic(npcEquipment/2).
 dynamic(npcPosition/2).
+dynamic(object/1).
 weapon(akm, 50, 0).
 weapon(ump, 35, 0).
 weapon(clurit,20, 0).
@@ -53,7 +54,7 @@ start :- write(' _____    _    _   ____     _____ '),nl,
 		 assertz(ammoPosition(ammo,5,1,3)),
 		 assertz(ammoPosition(ammo,10,2,1)),
 		 assertz(playerHealth(100)),
-		 assertz(playerAttack([],0)),
+		 assertz(object([])),
 		 assertz(playerArmor([],0)),
 		 assertz(playerAmmo(0)),
 		 assertz(playerInventory([],10)),
@@ -96,32 +97,38 @@ w :- playerPosition(X, Y), Z is X-1, retract(playerPosition(X,Y)), assertz(playe
 e :- playerPosition(X, Y), Z is X+1, retract(playerPosition(X,Y)), assertz(playerPosition(Z,Y)).
 s :- playerPosition(X, Y), Z is Y+1, retract(playerPosition(X,Y)), assertz(playerPosition(X,Z)).
 
-status :- playerHealth(Health), playerArmor(Armor), playerEquip(Equipment, _), playerInventory(Jumlah,_),
+status :- playerHealth(Health), playerArmor(Armor,Jumlah), playerEquip(Equipment, _), playerInventory(Inven,Sisa),
 			write('Health : '), write(Health), nl,
-			write('Armor : '), write(Armor), nl,
+			write('Armor : '), cetakArmor(Armor), 
 			write('Weapon : '), write(Equipment), nl, 
-			Jumlah = 0, write('Your inventory is empty!'), nl.
-			
-look :- playerPosition(X,Y),
+			cekInventory, nl.
+cetakArmor([]):-nl.	
+cetakArmor([H|T]):-write(H),write(' '),cetakArmor(T).
+		
+look :- playerPosition(X,Y),object(L),retract(object(L)),assertz(object([])),
 		A is X-1, B is Y-1, cek(A,B),
 		C is X, D is Y-1,cek(C,D),
 		E is X+1, F is Y-1,cek(E,F),nl,
 		G is X-1, H is Y,cek(G,H),
 		I is X, J is Y,cek(I,J),
-		K is X+1, L is Y,cek(K,L),nl,
+		K is X+1, L1 is Y,cek(K,L1),nl,
 		M is X-1, N is Y+1,cek(M,N),
 		O is X, P is Y+1,cek(O,P),
-		Q is X+1, R is Y+1,cek(Q,R).
+		Q is X+1, R is Y+1,cek(Q,R),nl,object(L2),
+		keterangan(L2).
 
 attack :- playerHealth(X), npcEquipment(_,Y), Z is X-Y, retract(playerHealth(X)), asserta(playerHealth(Z)). 
 
 /* Predikat Tambahan */
 cek(X,Y):-npcPosition(X,Y), write('E'), !.
-cek(X,Y):-medicinePosition(_,X,Y),write('M'),!.
-cek(X,Y):-weaponPosition(_,X,Y),write('W'),!.
-cek(X,Y):-armorPosition(_,X,Y),write('A'),!.
-cek(X,Y):-ammoPosition(_,N,X,Y),write('O'),!.
+cek(X,Y):-object(L),medicinePosition(Benda,X,Y),!,write('M'),retract(object(L)),assertz(object([Benda|L])).
+cek(X,Y):-object(L),weaponPosition(Benda,X,Y),!,write('W'),retract(object(L)),assertz(object([Benda|L])).
+cek(X,Y):-object(L),armorPosition(Benda,X,Y),!,write('A'),retract(object(L)),assertz(object([Benda|L])).
+cek(X,Y):-object(L),ammoPosition(Benda,N,X,Y),!,write('O'),retract(object(L)),assertz(object([Benda|L])).
 cek(X,Y):-write('-').
+keterangan([H]):-write('You see the '),write(H),write('.').
+keterangan([H|T]):-write('You see the '),write(H),write('.'),keterangan(T).
+
 
 take(Object):-playerPosition(X,Y),A is X, B is Y, medicinePosition(Object,A,B),playerInventory(I,N),M is N-1,retract(medicinePosition(Object,A,B)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),!.
 take(Object):-playerPosition(X,Y),A is X, B is Y, weaponPosition(Object,A,B),playerInventory(I,N),M is N-1,retract(weaponPosition(Object,X,Y)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),!.
@@ -142,11 +149,8 @@ drop(Object):-armor(Object,F),playerPosition(X,Y),playerInventory(L,N), M is N+1
 drop(Object):-medicine(Object,F),playerPosition(X,Y),playerInventory(L,N), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),assertz(playerInventory(L2,M)),assertz(medicinePosition(Object,X,Y)),write('You drop the '),write(Object),!.
 drop(Object):-ammo(Object,F),playerAmmo(J),playerPosition(X,Y),playerInventory(L,N), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),assertz(playerInventory(L2,M)),assertz(ammoPosition(Object,J,X,Y)),write('You drop the '),write(Object),!.
 
-use(Object):-weapon(Object,F,G),playerInventory(L,N),playerAttack(I,U), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerAttack(I,U)),assertz(playerInventory(L2,M)),assertz(playerAttack([Object],F)),write('You use the '),write(Object),!.
-use(Object):-armor(Object,F),playerInventory(L,N),playerArmor(I,U), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerArmor(I,U)),assertz(playerInventory(L2,M)),assertz(playerArmor([Object],F)),write('You use the '),write(Object),!.
+use(Object):-weapon(Object,Attack,G),playerInventory(L,N),playerEquip(I,U), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerEquip(I,U)),assertz(playerInventory(L2,M)),assertz(playerEquip(Object,Attack)),write('You use the '),write(Object),!.
+use(Object):-armor(Object,F),playerInventory(L,N),playerArmor(I,U), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerArmor(I,U)),assertz(playerInventory(L2,M)),JumlahArmor is U+F,assertz(playerArmor([Object|I],JumlahArmor)),write('You use the '),write(Object),!.
 use(Object):-medicine(Object,F),playerInventory(L,N),playerHealth(X), M is N+1, Y is X + F, Y<100, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerHealth(X)),assertz(playerInventory(L2,M)), assertz(playerHealth(Y)),write('You use the '),write(Object),nl,write('Now your health is '),write(Y),!.
 use(Object):-medicine(Object,F),playerInventory(L,N),playerHealth(X), M is N+1,  Y = 100, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerHealth(X)),assertz(playerInventory(L2,M)),assertz(playerHealth(Y)),write('You use the '),write(Object),nl,write('Now your health is '),write(Y).
-/*Belum diprint isi inventorinya, baru print jumlahnya
-cetakInven:-inventory([H],N),write(H),nl,inventory([],N).
-cetakInven:-inventory([H|T],N),write(H),nl,inventory(T,N).
-*/
+
