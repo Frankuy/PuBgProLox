@@ -23,6 +23,7 @@ dynamic(npcAlive/1).
 weapon(akm, 50, 0).
 weapon(ump, 35, 0).
 weapon(pistol, 10, 0).
+peluru(ammo,0).
 ammo(5).
 ammo(10).
 armor(vest, 50).
@@ -38,7 +39,7 @@ start :- write(' _____    _    _   ____     _____ '),nl,
 		 write('| |      | |__| | | |_) | | |__| |'),nl,
 		 write('|_|       \\____/  |____/   \\_____|  Jagonya Ayam'),nl,
 		 write('                                     '),nl,
-		 % gambarAyam,
+		 gambarAyam,
 		 write('Selamat datang di Pulau Champs.'), nl,
 		 write('Bersenang-senanglah di pulau ini!. Tapi ingat only one can survive and get the title "Jagonya Ayam"'), nl,
 		 write('Jika kamu menang, Kamu juga akan mendapatkan persediaan sosis selama 1 tahun penuh. So, let\'s the battle royale begin!'), nl, nl,
@@ -50,34 +51,34 @@ start :- write(' _____    _    _   ____     _____ '),nl,
 		 command,nl,
 		 winOrlose.
 
-help :- print('      =================================================================================='),nl,
-		print('     |Available commands to help you survive the game and win the title  "Jagonya Ayam"|'),nl,
-		print('     |=================================================================================|'),nl,
-		print('     |start.            | Start the game.                                              |'),nl,
-		print('     |help.             | Get some help to look over commands available.               |'),nl,
-		print('     |quit.             | Farewell, quit the game.                                     |'),nl,
-		print('     |look.             | Look around you.                                             |'),nl,
-		print('     |map.              | Open cetakMAP and see where on Earth are you.                |'),nl,
-		print('     |N. E. S. W.       | Move to the North, East, South, or West.                     |'),nl,
-		print('     |take(Object).     | Pick up an object.                                           |'),nl,
-		print('     |drop(Object).     | Drop an object.                                              |'),nl,
-		print('     |use(Object).      | Use an object from your inventory.                           |'),nl,
-		print('     |attack.           | Attack the enemy that crosses your path.                     |'),nl,
-		print('     |status.           | Show your status.                                            |'),nl,
-		print('     |save(FileName).   | Save your game.                                              |'),nl,
-		print('     |load(FileName).   | Load your previously saved game.                             |'),nl,
-		print('     |=================================================================================|'),nl,
-		print('     |                            Information of the MAP                               |'),nl,
-		print('     |=================================================================================|'),nl,
-		print('     |         W        | Weapon                                                       |'),nl,
-		print('     |         A        | Armor                                                        |'),nl,
-		print('     |         M        | Medicine                                                     |'),nl,
-		print('     |         O        | Ammo                                                         |'),nl,
-		print('     |         P        | Player                                                       |'),nl,
-		print('     |         E        | Enemy                                                        |'),nl,
-		print('     |         -        | Accessible                                                   |'),nl,
-		print('     |         X        | Inaccessible                                                 |'),nl,
-		print('      =================================================================================='),nl.
+help :- print(' ==================================================================================='),nl,
+		print(' |Available commands to help you survive the game and win the title  "Jagonya Ayam"|'),nl,
+		print(' |=================================================================================|'),nl,
+		print(' |start.            | Start the game.                                              |'),nl,
+		print(' |help.             | Show some information about the game.                        |'),nl,
+		print(' |quit.             | Quit from the game.                                          |'),nl,
+		print(' |look.             | Look around you.                                             |'),nl,
+		print(' |map.              | Open map in the game                                         |'),nl,
+		print(' |N. E. S. W.       | Move to the North, East, South, or West.                     |'),nl,
+		print(' |take(Object).     | Pick up an object.                                           |'),nl,
+		print(' |drop(Object).     | Drop an object from your inventory                           |'),nl,
+		print(' |use(Object).      | Use an object from your inventory.                           |'),nl,
+		print(' |attack.           | Attack the enemy.                                            |'),nl,
+		print(' |status.           | Show your status.                                            |'),nl,
+		print(' |save(FileName).   | Save your game.                                              |'),nl,
+		print(' |load(FileName).   | Load your previously saved game.                             |'),nl,
+		print(' |=================================================================================|'),nl,
+		print(' |                            Information of the MAP                               |'),nl,
+		print(' |=================================================================================|'),nl,
+		print(' |         W        | Weapon                                                       |'),nl,
+		print(' |         A        | Armor                                                        |'),nl,
+		print(' |         M        | Medicine                                                     |'),nl,
+		print(' |         O        | Ammo                                                         |'),nl,
+		print(' |         P        | Player                                                       |'),nl,
+		print(' |         E        | Enemy                                                        |'),nl,
+		print(' |         -        | Accessible                                                   |'),nl,
+		print(' |         X        | Inaccessible                                                 |'),nl,
+		print(' ==================================================================================='),nl.
 
 quit :- halt.
 
@@ -94,10 +95,10 @@ cetakKeteranganTempatSetelahGerak(X,Y) :-  A is X+1, B is X-1, C is Y + 1, D is 
 
 status :- playerHealth(Health), playerArmor(Armor,Jumlah), playerEquip(Equipment, _), playerInventory(Inven,Sisa),
 			write('Health : '), write(Health), nl,
-			write('Armor : '), cetakArmor(Armor),
+			write('Armor : '), write(Armor),write(' = '), write(Jumlah),nl,
 			write('Weapon : '), write(Equipment), nl,
 			write('Ammo : '), playerAmmo(X), write(X),nl,
-			cekInventory.
+			write('Inventory :'),nl, cekInventory.
 
 look :- playerPosition(X,Y),object(L),retract(object(L)),assertz(object([])),
 		A is X-1, B is Y-1, cek(A,B),
@@ -130,22 +131,30 @@ attackEnemy(Id, Hp) :- retract(npcHealth(Id,_)), asserta(npcHealth(Id,Hp)), writ
 
 map :- playerPosition(X,Y), luasmap(A,A), danger(B), cetakMAP(1,1,A,B,X,Y).
 
-take(Object):-playerPosition(X,Y),A is X, B is Y, medicinePosition(Object,A,B),playerInventory(I,N),M is N-1,retract(medicinePosition(Object,A,B)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),nl, increaseTime, increaseDanger,killbot, !.
-take(Object):-playerPosition(X,Y),A is X, B is Y, weaponPosition(Object,A,B),playerInventory(I,N),M is N-1,retract(weaponPosition(Object,X,Y)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),nl, increaseTime, increaseDanger, killbot,!.
-take(Object):-playerPosition(X,Y),A is X, B is Y, armorPosition(Object,A,B),playerInventory(I,N),M is N-1,retract(armorPosition(Object,X,Y)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),nl, increaseTime, increaseDanger, killbot, !.
-take(Object):-playerPosition(X,Y),A is X, B is Y, ammoPosition(Object,J,A,B),playerAmmo(N),M is N+J,retract(playerAmmo(N)),retract(ammoPosition(Object,J,A,B)),assertz(playerAmmo(M)),write('You took the '),write(Object),nl, increaseTime, increaseDanger,killbot,!.
+take(Object):-playerPosition(X,Y),A is X, B is Y, medicinePosition(Object,A,B),playerInventory(I,N),N>0, M is N-1,retract(medicinePosition(Object,A,B)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),nl, increaseTime, !,increaseDanger,killbot.
+take(Object):-playerPosition(X,Y),A is X, B is Y, weaponPosition(Object,A,B),playerInventory(I,N),N>0,M is N-1,retract(weaponPosition(Object,X,Y)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),nl, increaseTime, !,increaseDanger, killbot.
+take(Object):-playerPosition(X,Y),A is X, B is Y, armorPosition(Object,A,B),playerInventory(I,N),N>0,M is N-1,retract(armorPosition(Object,X,Y)),retract(playerInventory(I,N)),assertz(playerInventory([Object|I],M)),write('You took the '),write(Object),nl, increaseTime, !,increaseDanger, killbot.
+take(Object):-playerPosition(X,Y),A is X, B is Y, ammoPosition(Object,J,A,B),playerAmmo(N),M is N+J,retract(playerAmmo(N)),retract(ammoPosition(Object,J,A,B)),assertz(playerAmmo(M)),write('You took the '),write(Object),nl, increaseTime, !,increaseDanger,killbot.
+take(Object):-playerInventory(I,N),N =< 0,write('Inventory sudah penuh'),nl,increaseTime, !,increaseDanger,killbot.
 take(Object):-write(Object), write(' tidak ada di sekeliling mu'),nl.
 
-drop(Object):-weapon(Object,F,G),playerPosition(X,Y),playerInventory(L,N), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),assertz(playerInventory(L2,M)),assertz(weaponPosition(Object,X,Y)),write('You drop the '),write(Object),increaseTime, increaseDanger,killbot,!.
-drop(Object):-armor(Object,F),playerPosition(X,Y),playerInventory(L,N), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),assertz(playerInventory(L2,M)),assertz(armorPosition(Object,X,Y)),write('You drop the '),write(Object),increaseTime, increaseDanger,killbot,!.
-drop(Object):-medicine(Object,F),playerPosition(X,Y),playerInventory(L,N), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),assertz(playerInventory(L2,M)),assertz(medicinePosition(Object,X,Y)),write('You drop the '),write(Object),increaseTime, increaseDanger,killbot,!.
-drop(Object):-ammo(Object,F),playerAmmo(J),playerPosition(X,Y),playerInventory(L,N), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),assertz(playerInventory(L2,M)),assertz(ammoPosition(Object,J,X,Y)),write('You drop the '),write(Object),increaseTime, increaseDanger,killbot,!.
+drop(Object):-weapon(Object,F,G),playerPosition(X,Y),playerInventory(L,N),member(Object,L), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),assertz(playerInventory(L2,M)),assertz(weaponPosition(Object,X,Y)),write('You drop the '),write(Object),nl,increaseTime, !,increaseDanger,killbot.
+drop(Object):-armor(Object,F),playerPosition(X,Y),playerInventory(L,N),member(Object,L), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),assertz(playerInventory(L2,M)),assertz(armorPosition(Object,X,Y)),write('You drop the '),write(Object),nl,increaseTime,!, increaseDanger,killbot.
+drop(Object):-medicine(Object,F),playerPosition(X,Y),playerInventory(L,N), member(Object,L),M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),assertz(playerInventory(L2,M)),assertz(medicinePosition(Object,X,Y)),write('You drop the '),write(Object),nl,increaseTime,!, increaseDanger,killbot.
+drop(Object):-peluru(Object,F),playerAmmo(J),J>0,playerPosition(X,Y),playerInventory(L,N), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerAmmo(J)),assertz(playerAmmo(0)),assertz(playerInventory(L2,M)),assertz(ammoPosition(Object,J,X,Y)),write('You drop the '),write(Object),nl,increaseTime,!, increaseDanger,killbot.
 drop(Object):-write(Object), write(' tidak ada di inventori mu'),nl.
 
-use(Object):-weapon(Object,Attack,G),playerInventory(L,N),playerEquip(I,U), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerEquip(I,U)),assertz(playerInventory(L2,M)),assertz(playerEquip(Object,Attack)),write('You use the '),write(Object),increaseTime, increaseDanger, killbot, !.
-use(Object):-armor(Object,F),playerInventory(L,N),playerArmor(I,U), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerArmor(I,U)),assertz(playerInventory(L2,M)),JumlahArmor is U+F,assertz(playerArmor([Object|I],JumlahArmor)),write('You use the '),write(Object),increaseTime, increaseDanger, killbot,!.
-use(Object):-medicine(Object,F),playerInventory(L,N),playerHealth(X), M is N+1, Y is X + F, Y<100, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerHealth(X)),assertz(playerInventory(L2,M)), assertz(playerHealth(Y)),write('You use the '),write(Object),nl,write('Now your health is '),write(Y),increaseTime, increaseDanger,killbot, !.
-use(Object):-medicine(Object,F),playerInventory(L,N),playerHealth(X), M is N+1,  Y = 100, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerHealth(X)),assertz(playerInventory(L2,M)),assertz(playerHealth(Y)),write('You use the '),write(Object),nl,write('Now your health is '),write(Y), increaseTime, increaseDanger, killbot.
+use(Object):-weapon(Object,Attack,G),playerInventory(L,N),member(Object,L),playerEquip(Equipment,_), Equipment==none, M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerEquip(Equipment,_)),assertz(playerInventory(L2,M)),assertz(playerEquip(Object,Attack)),write('You use the '),write(Object),nl,increaseTime,!, increaseDanger, killbot.
+use(Object):-weapon(Object,Attack,G),playerInventory(L,N),member(Object,L),playerEquip(Equipment,_), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),assertz(playerInventory(L2,M)),change(Equipment,Object),write('You use the '),write(Object),nl,increaseTime,!, increaseDanger, killbot.
+use(Object):-armor(Object,F),playerInventory(L,N),member(Object,L),playerArmor(Equipment,Jumlah),Equipment==none, M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerArmor(Equipment,Jumlah)),assertz(playerInventory(L2,M)),JumlahArmor is Jumlah+F,assertz(playerArmor(Object,JumlahArmor)),write('You use the '),write(Object),nl,increaseTime,!, increaseDanger, killbot.
+use(Object):-armor(Object,F),playerInventory(L,N),member(Object,L),playerArmor(Equipment,Jumlah), M is N+1, delete(L,Object,L2),retract(playerInventory(L,N)),assertz(playerInventory(L2,M)),change(Equipment,Object),write('You use the '),write(Object),nl,increaseTime,!, increaseDanger, killbot.
+use(Object):-medicine(Object,F),playerInventory(L,N),member(Object,L),playerHealth(X), M is N+1, Y is X + F, Y<100, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerHealth(X)),assertz(playerInventory(L2,M)), assertz(playerHealth(Y)),write('You use the '),write(Object),nl,write('Now your health is '),write(Y),nl,increaseTime, !,increaseDanger,killbot.
+use(Object):-medicine(Object,F),playerInventory(L,N),member(Object,L),playerHealth(X), M is N+1,  Y = 100, delete(L,Object,L2),retract(playerInventory(L,N)),retract(playerHealth(X)),assertz(playerInventory(L2,M)),assertz(playerHealth(Y)),write('You use the '),write(Object),nl,write('Now your health is '),write(Y), nl,increaseTime, !,increaseDanger, killbot.
+use(Object):-write(Object),write(' tidak ada di inventori mu'),nl.
+
+change(Equipment,Object):-weapon(Object,Damage,A),playerEquip(Equipment,_),playerInventory(L,N),M is N-1,retract(playerInventory(L,N)),retract(playerEquip(Equipment,_)),assertz(playerInventory([Equipment|L],M)),assertz(playerEquip(Object,Damage)),!.
+change(Equipment,Object):-armor(Object,Jumlah),playerArmor(Equipment,_),playerInventory(L,N),M is N-1,retract(playerInventory(L,N)),retract(playerArmor(Equipment,_)),assertz(playerInventory([Equipment|L],M)),assertz(playerArmor(Object,Jumlah)),!.
+
 
 
 /* Predikat Tambahan */
@@ -199,7 +208,7 @@ buatDatabase :- generateNPCEasy(1),generateNPCEasy(2),
 		 assertz(danger(1)),
 		 assertz(time(0)),
 		 assertz(object([])),
-		 assertz(playerArmor([],0)),
+		 assertz(playerArmor(none,0)),
 		 assertz(npcAlive(6)).
 
 command :- write('>'), read(X), X.
@@ -231,34 +240,33 @@ cetakArmor([]):-nl.
 cetakArmor([H|T]):-write(H),write(' '),cetakArmor(T).
 
 killbot :- npcPosition(Id, X, Y), dangerZone(X,Y), retract(npcPosition(Id,X,Y)), retract(npcHealth(Id,_)), assertz(weaponPosition(NamaSenjata,X,Y)), npcAlive(Alive), NewAlive is Alive-1, retract(npcAlive(Alive)), assertz(npcAlive(NewAlive)), !.
-/*
-gambarAyam :- print('                                   .-.  .--\'\'` )'),nl,
-				print('                                _ |  |/`   .-\'`'),nl,
-				print('                               ( `\      /`'),nl,
-				print('                               _)   _.  -\'._'),nl,
-				print('                             /`  .\'     .-.-;'),nl,
-				print('                             `).'      /  \  \'),nl,
-				print('                            (`,        \_o/_o/__'),nl,
-				print('                             /           .-''`  ``\'-.'),nl,
-				print('                             {         /` ,___.--'''),nl,
-				print('                             {   ;     '-. \ \'),nl,
-				print('           _   _             {   |'-....-`'.\_\'),nl,
-				print('          / './ '.           \   \          `"`'),nl,
-				print('       _  \   \  |            \   \'),nl,
-				print('      ( '-.J     \_..----.._ __)   `\--..__'),nl,
-				print('     .-`                    `        `\    ''--...--.'),nl,
-				print('    (_,.--""`/`         .-             `\       .__ _)'),nl,
-				print('            |          (                 }    .__ _)'),nl,
-				print('            \_,         '.               }_  - _.''),nl,
-				print('               \_,         '.            } `'--''),nl,
-				print('                  '._.     ,_)          /'),nl,
-				print('                     |    /           .''),nl,
-				print('                      \   |    _   .-''),nl,
-				print('                      \__/;--.||-''),nl,
-				print('                      _||   _||__   __'),nl,
-				print('               _ __.-` "`)(` `"  ```._)'),nl,
-				print('              (_`,-   ,-'  `''-.   '-._)'),nl,
-				print('             (  (    /          '.__.''),nl,
-				print('              `"`'--''),nl,
 
-*/
+gambarAyam :-   write('                                  .-.  .--------)'),nl,
+				print('                                _ |  |/`   .- -)'),nl,
+				print('                               ( `       /`'),nl,
+				print('                               _)   _.  -| ._'),nl,
+				print('                             /`  .\'    .-.-.'),nl,
+				print('                             `).       |  |  |'),nl,
+				print('                            (`,        |_o|_o|__'),nl,
+				print('                             /           .-''`  `````)'),nl,
+				print('                             {         /` ,__________)'),nl,
+				print('                             {   ;     ''-.___________)'),nl,
+				print('           _   _             {   }-....----`'),nl,
+				print('          / `./ `.           {   }         `'),nl,
+				print('       _  {   {  |            {   }'),nl,
+				print('      ( `-.J     }_..----.._ __)   `}--..__'),nl,
+				print('     .-`                    `        `}    ``--...--.'),nl,
+				print('    (_,.--````/`         .-             `}       .__ _)'),nl,nl,
+				print('            |          (                 }    .__ _)'),nl,
+				print('            {_,         `.               }_  - _.`'),nl,
+				print('               {_,         `.            } ``--`'),nl,
+				print('                  `._.     ,_)          /'),nl,
+				print('                     |    /           .`'),nl,
+				print('                      {   |    _   .-`'),nl,
+				print('                      {__/;--.||-`'),nl,
+				print('                      _||   _||__   __'),nl,
+				print('               _ __.-` ```)(` ```  ```._)'),nl,
+				print('              (_`,-   ,-`  ```-.   `-._)'),nl,
+				print('             (  (    /          `.__.`'),nl,
+				print('              `````--`'),nl.
+
